@@ -2477,13 +2477,13 @@ fieldset:disabled a.btn {
 }
 .btn-primary:hover {
   color: #fff;
-  background-color: #9f4e2f;
-  border-color: #964a2c;
+  background-color: #06c258;
+  border-color: #06c258;
 }
 .btn-primary:focus, .btn-primary.focus {
   color: #fff;
-  background-color: #9f4e2f;
-  border-color: #964a2c;
+  background-color: #06c258;
+  border-color: #06c258;
   box-shadow: 0 0 0 0.2rem rgba(199, 117, 86, 0.5);
 }
 .btn-primary.disabled, .btn-primary:disabled {
@@ -2493,8 +2493,8 @@ fieldset:disabled a.btn {
 }
 .btn-primary:not(:disabled):not(.disabled):active, .btn-primary:not(:disabled):not(.disabled).active, .show > .btn-primary.dropdown-toggle {
   color: #fff;
-  background-color: #964a2c;
-  border-color: #8c4529;
+  background-color: #06c258;
+  border-color: #06c258;
 }
 .btn-primary:not(:disabled):not(.disabled):active:focus, .btn-primary:not(:disabled):not(.disabled).active:focus, .show > .btn-primary.dropdown-toggle:focus {
   box-shadow: 0 0 0 0.2rem rgba(199, 117, 86, 0.5);
@@ -10115,9 +10115,82 @@ section.resume-section {
   padding-top: 5rem;
   padding-bottom: 5rem;
   max-width: 75rem;
+  flex-direction: column;
 }
 section.resume-section .resume-section-content {
   width: 100%;
+}
+
+section.resume-section .game-wrapper{
+  width: 100%;
+}
+
+.game-control{
+  display: flex;
+  justify-content: center;
+}
+
+.upBtn{
+  width: 10vw;
+  margin: 5px;
+}
+
+.downBtn{
+  width: 10vw;
+  margin: 5px;
+}
+
+.game-area{
+  margin-top: 3vw;
+  border-radius: 8px;
+  background: url('../assets/img/bg-game.jpg');
+  background-repeat: repeat-x;
+  -webkit-animation: bgMove 10s steps(1000) infinite;
+  -moz-animation: bgMove 10s steps(1000) infinite;
+  -ms-animation: bgMove 10s steps(1000) infinite;
+  -o-animation: bgMove 10s steps(1000) infinite;
+  animation: bgMove 10s steps(2000) infinite;
+}
+
+@-webkit-keyframes bgMove {
+  from {
+    background-position: 0 50%;
+  }
+  to {
+    background-position: -2000px  50%;
+  }
+}
+@-moz-keyframes bgMove {
+  from {
+    background-position: 0 50%;
+  }
+  to {
+    background-position: -2000px  50%;
+  }
+}
+@-ms-keyframes bgMove {
+  from {
+    background-position: 0 50%;
+  }
+  to {
+    background-position: -2000px  50%;
+  }
+}
+@-o-keyframes bgMove {
+  from {
+    background-position: 0 50%;
+  }
+  to {
+    background-position: -2000px  50%;
+  }
+}
+@keyframes bgMove {
+  from {
+    background-position: 0 50%;
+  }
+  to {
+    background-position: -2000px  50%;
+  }
 }
 
 @media (min-width: 768px) {
