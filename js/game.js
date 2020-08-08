@@ -1,3 +1,7 @@
+var Character = null;
+var Obstacles = [];
+var maxObstacleNumber = 3;
+var maxLife = 3;
 var GameScreen = {
     canvas: document.createElement('canvas'),
     gameWrapper: document.getElementById('game-wrapper'),
@@ -5,7 +9,7 @@ var GameScreen = {
     obstacleList: [
         {
             name: "stone",
-            src: './assets/img/obstacles/Stone.png',
+            src: './assets/img/obstacles/stone_img.png',
             width: 90,
             height: 54,
             x: document.getElementById('game-wrapper').clientWidth,
@@ -17,7 +21,7 @@ var GameScreen = {
         },
         {
             name: "crate",
-            src: "./assets/img/obstacles/Crate.png",
+            src: "./assets/img/obstacles/crate_img.png",
             width: 77,
             height: 77,
             x: document.getElementById('game-wrapper').clientWidth,
@@ -29,7 +33,7 @@ var GameScreen = {
         },
         {
             name: "tree",
-            src: "./assets/img/obstacles/tree.png",
+            src: "./assets/img/obstacles/tree_img.png",
             width: 91,
             height: 87.5,
             x: document.getElementById('game-wrapper').clientWidth,
@@ -47,8 +51,21 @@ var GameScreen = {
         this.context = this.canvas.getContext("2d");
         this.gameWrapper.insertBefore(this.canvas, this.gameWrapper.childNodes[0]);
         this.gameScores = 0;
+        this.isRetry = false;
     },
     start: function() {
+        if(this.isRetry){
+            this.clear();
+            var gameArea = document.getElementsByClassName('game-area');
+            gameArea[0].classList.remove('game-area-stop');
+
+            Character.life = maxLife;
+            this.gameScores = 0;
+
+            Obstacles = [];
+            initObstacles();
+        }
+
         this.interval = setInterval(updateGameScreen, 20);
         this.characterRunning = setInterval(running, 150);
         this.characterRunningCtr = 1;
@@ -69,11 +86,27 @@ var GameScreen = {
     },
     stop: function() {
         clearInterval(this.interval);
+        clearInterval(this.characterRunning);
+        this.isRetry = true;
+        
         var gameArea = document.getElementsByClassName('game-area');
         gameArea[0].classList.add('game-area-stop');
 
         document.getElementById('jump-btn').classList.add('hidden');
         document.getElementById('play-me-btn').classList.remove('hidden');
+
+        this.characterDeadCtr = 1;
+        setInterval(function(){
+            var ctr = GameScreen.characterDeadCtr;
+            if(ctr < 8){
+                ctr = ctr + 1;
+                GameScreen.clear();
+                Character.update();
+                Character.runDeadSprite(ctr);  
+            }else if(ctr == 8){
+                GameScreen.clearDeadInterval();
+            }
+        }, 100);
     },
     getObstacle: function(idx){
         return this.obstacleList[idx];
@@ -89,7 +122,6 @@ var GameScreen = {
         return this.gameScores;
     },
     renderHeart: function(life){
-        //append life icon
         document.getElementById('life-icon').innerHTML = ''
         var deadLife = maxLife - life;
         for(var i=0; i<life; i++){
@@ -98,12 +130,11 @@ var GameScreen = {
         for(var i=0; i<deadLife; i++){
             document.getElementById('life-icon').innerHTML += '<i class="far fa-heart fa-2x"></i>'
         }
+    },
+    clearDeadInterval: function(){
+        clearInterval(this.characterDead);
     }
 }
-var Character = null;
-var Obstacles = [];
-var maxObstacleNumber = 3;
-var maxLife = 3;
 
 function component(width, height, srcImage, x, y){
     this.width = width;
@@ -211,6 +242,10 @@ function component(width, height, srcImage, x, y){
     this.setImmunity = function(immunity){
         this.immunity = immunity;
     }
+    this.runDeadSprite = function(ctr){
+        this.image.src = `./assets/img/dino-dead/dead_${ctr}.png`;
+        GameScreen.characterDeadCtr = ctr;
+    }
 }
 
 function ObstacleComponent(width, height, srcImage, x, y, collisionleft, collisionRight, collisionTop, collisionBot){
@@ -276,7 +311,6 @@ function running(){
         checkGameStop();
     }else{
         Character.updateSpriteRunning();
-        Character.update();
     }
 }
 function updateGameScreen(){
@@ -335,27 +369,31 @@ function loadGame(){
         Character = new component(170, 118, "", 10, 180);
     }
     if(Obstacles.length == 0){
-        var obs;
-        var elIdxRand = Math.floor(Math.random() * GameScreen.getCountObstacles());
-        var obstacleObj = GameScreen.getObstacle(elIdxRand);
-
-        for(var i=0 ; i<maxObstacleNumber; i++){
-            var number = i+1;
-            obs = new ObstacleComponent(
-                obstacleObj.width, 
-                obstacleObj.height, 
-                obstacleObj.src, 
-                obstacleObj.x + (number * 600), 
-                obstacleObj.y,
-                obstacleObj.collisionleft,
-                obstacleObj.collisionRight,
-                obstacleObj.collisionTop,
-                obstacleObj.collisionBot
-            );
-            Obstacles.push(obs); 
-        }
+        initObstacles();
     }
    GameScreen.load();
+}
+
+function initObstacles(){
+    var obs;
+    var elIdxRand = Math.floor(Math.random() * GameScreen.getCountObstacles());
+    var obstacleObj = GameScreen.getObstacle(elIdxRand);
+
+    for(var i=0 ; i<maxObstacleNumber; i++){
+        var number = i+1;
+        obs = new ObstacleComponent(
+            obstacleObj.width, 
+            obstacleObj.height, 
+            obstacleObj.src, 
+            obstacleObj.x + (number * 600), 
+            obstacleObj.y,
+            obstacleObj.collisionleft,
+            obstacleObj.collisionRight,
+            obstacleObj.collisionTop,
+            obstacleObj.collisionBot
+        );
+        Obstacles.push(obs); 
+    }
 }
 
 function runGame(){
