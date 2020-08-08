@@ -10127,29 +10127,50 @@ section.resume-section .game-wrapper{
 
 .game-control{
   display: flex;
-  justify-content: center;
+  justify-content: space-around;
+  border-bottom: 5px dashed #6c757d;
+  border-left: 5px dashed #6c757d;
+  border-right: 5px dashed #6c757d;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  padding: 12px;
+  margin-top: -10px;
 }
 
-.upBtn{
-  width: 80px;
-  margin: 5px;
+.hidden{
+  display: none !important;
+}
+.show{
+  display: block !important;
 }
 
-.downBtn{
-  width: 10vw;
-  margin: 5px;
+.score-text{
+  font-size: 20px;
+  font-weight: bold;
 }
 
 .game-area{
   margin-top: 3vw;
   border-radius: 8px;
   background: url('../assets/img/bg-game.jpg');
+  background-position: 0 50%;
   background-repeat: repeat-x;
+}
+
+.game-area-run{
   -webkit-animation: bgMove 10s steps(1000) infinite;
   -moz-animation: bgMove 10s steps(1000) infinite;
   -ms-animation: bgMove 10s steps(1000) infinite;
   -o-animation: bgMove 10s steps(1000) infinite;
   animation: bgMove 10s steps(2000) infinite;
+}
+
+.game-area-stop{
+  -webkit-animation: none !important;
+  -moz-animation: none !important;
+  -ms-animation: none !important;
+  -o-animation: none !important;
+  animation: none !important;
 }
 
 @-webkit-keyframes bgMove {

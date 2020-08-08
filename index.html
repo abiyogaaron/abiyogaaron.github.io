@@ -15,7 +15,7 @@
         <!-- Core theme CSS (includes Bootstrap)-->
         <link href="css/styles.css" rel="stylesheet" />
     </head>
-    <body id="page-top" onload="startGame()">
+    <body id="page-top" onload="loadGame()">
         <!-- Navigation-->
         <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top" id="sideNav">
             <a class="navbar-brand js-scroll-trigger" href="#page-top">
@@ -56,12 +56,22 @@
                 </div>
                 <div class="game-wrapper" id="game-wrapper">
                     <div class="game-control">
-                        <button type="button" class="btn btn-primary upBtn"
+                        <p class="text-danger hidden" id="life-icon"> 
+                        </p>
+                        <button type="button" class="btn btn-dark" onclick="runGame()" id="play-me-btn">
+                            <i class="fas fa-play-circle"></i> Play me
+                        </button>
+                        <button type="button" class="btn btn-dark hidden" id="jump-btn"
                             onmousedown="accelerate(-0.9)" onmouseup="accelerateDown(0.2)"
                             ontouchstart="accelerate(-0.9)" ontouchend="accelerateDown(0.2)"
                         >
-                            <i class="fas fa-arrow-circle-up fa-2x"></i>
+                            <i class="fas fa-arrow-circle-up"></i>
+                            Jump
                         </button>
+                        <p class="score-text text-primary hidden" id="score-text">
+                            <i class="fas fa-star"></i> Score: 
+                            <span id="score"></span>
+                        </p>
                     </div>
                 </div>
             </section>
@@ -185,10 +195,10 @@
             </section>
         </div>
         <!-- Bootstrap core JS-->
-        <script src="./vendor/jquery.min.js"></script>
-        <script src="./vendor/boostrap.bundle.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.bundle.min.js"></script>
         <!-- Third party plugin JS-->
-        <script src="./vendor/jquery.easing.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script>
         <!-- Core theme JS-->
         <script src="js/scripts.js"></script>
         <script src="js/game.js"></script>

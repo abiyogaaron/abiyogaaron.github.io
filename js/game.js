@@ -1,6 +1,7 @@
 var GameScreen = {
     canvas: document.createElement('canvas'),
     gameWrapper: document.getElementById('game-wrapper'),
+    gameScores: 0,
     obstacleList: [
         {
             name: "stone",
@@ -8,7 +9,11 @@ var GameScreen = {
             width: 90,
             height: 54,
             x: document.getElementById('game-wrapper').clientWidth,
-            y: 235
+            y: 235,
+            collisionleft: 85,
+            collisionRight: 85,
+            collisionTop: 20,
+            collisionBot: 20
         },
         {
             name: "crate",
@@ -16,44 +21,89 @@ var GameScreen = {
             width: 77,
             height: 77,
             x: document.getElementById('game-wrapper').clientWidth,
-            y: 220
+            y: 220,
+            collisionleft: 60,
+            collisionRight: 60,
+            collisionTop: 0,
+            collisionBot: 0
         },
         {
             name: "tree",
             src: "./assets/img/obstacles/tree.png",
-            width: 141,
-            height: 137.5,
+            width: 91,
+            height: 87.5,
             x: document.getElementById('game-wrapper').clientWidth,
-            y: 170
+            y: 200,
+            collisionleft: 65,
+            collisionRight: 65,
+            collisionTop: 20,
+            collisionBot: 20
         }
     ],
-    start: function() {
+    load: function() {
         this.canvas.width =  this.gameWrapper.clientWidth;
         this.canvas.height = 350;
         this.canvas.className = 'game-area';
         this.context = this.canvas.getContext("2d");
+        this.gameWrapper.insertBefore(this.canvas, this.gameWrapper.childNodes[0]);
+        this.gameScores = 0;
+    },
+    start: function() {
         this.interval = setInterval(updateGameScreen, 20);
         this.characterRunning = setInterval(running, 150);
         this.characterRunningCtr = 1;
 
-        this.gameWrapper.insertBefore(this.canvas, this.gameWrapper.childNodes[0]);
+        var gameArea = document.getElementsByClassName('game-area');
+        gameArea[0].classList.add('game-area-run');
+
+        document.getElementById('jump-btn').classList.remove('hidden');
+        document.getElementById('score-text').classList.remove('hidden');
+        document.getElementById('life-icon').classList.remove('hidden');
+        document.getElementById('play-me-btn').classList.add('hidden');
+        document.getElementById('score').innerText = this.gameScores;
+
+        this.renderHeart(Character.life);
     },
     clear: function() {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     },
     stop: function() {
         clearInterval(this.interval);
+        var gameArea = document.getElementsByClassName('game-area');
+        gameArea[0].classList.add('game-area-stop');
+
+        document.getElementById('jump-btn').classList.add('hidden');
+        document.getElementById('play-me-btn').classList.remove('hidden');
     },
     getObstacle: function(idx){
         return this.obstacleList[idx];
     },
     getCountObstacles: function(){
         return this.obstacleList.length;
+    },
+    setGameScore: function(){
+        this.gameScores += 50;
+        document.getElementById('score').innerText = this.gameScores;
+    },
+    getGameScore: function(){
+        return this.gameScores;
+    },
+    renderHeart: function(life){
+        //append life icon
+        document.getElementById('life-icon').innerHTML = ''
+        var deadLife = maxLife - life;
+        for(var i=0; i<life; i++){
+            document.getElementById('life-icon').innerHTML += '<i class="fas fa-heart fa-2x"></i>'
+        }
+        for(var i=0; i<deadLife; i++){
+            document.getElementById('life-icon').innerHTML += '<i class="far fa-heart fa-2x"></i>'
+        }
     }
 }
 var Character = null;
 var Obstacles = [];
 var maxObstacleNumber = 3;
+var maxLife = 3;
 
 function component(width, height, srcImage, x, y){
     this.width = width;
@@ -62,8 +112,10 @@ function component(width, height, srcImage, x, y){
     this.speedY = 0;  
     this.x = x;
     this.y = y;
-    this.gravity = 0.9;
+    this.life = maxLife;
+    this.gravity = 0.05;
     this.gravitySpeed = 0;
+    this.immunity = false;
     this.image = new Image();
     this.image.src = srcImage;
 
@@ -136,17 +188,44 @@ function component(width, height, srcImage, x, y){
             GameScreen.characterRunningCtr = ctr;
         }
     }
+    this.crashWith = function(otherobj) {
+        if(this.immunity) return false;
+
+        var myleft = this.x;
+        var myright = this.x + (this.width);
+        var mytop = this.y;
+        var mybottom = this.y + (this.height);
+        var otherleft = otherobj.x + otherobj.collisionleft;
+        var otherright = (otherobj.x + (otherobj.width)) - otherobj.collisionRight;
+        var othertop = otherobj.y + otherobj.collisionTop;
+        var otherbottom = (otherobj.y + (otherobj.height)) - otherobj.collisionBot;
+        var crash = true;
+        if ((mybottom < othertop) ||
+        (mytop > otherbottom) ||
+        (myright < otherleft) ||
+        (myleft > otherright)) {
+          crash = false;
+        }
+        return crash;
+    }
+    this.setImmunity = function(immunity){
+        this.immunity = immunity;
+    }
 }
 
-function ObstacleComponent(width, height, srcImage, x, y){
+function ObstacleComponent(width, height, srcImage, x, y, collisionleft, collisionRight, collisionTop, collisionBot){
     this.width = width;
     this.height = height;
-    this.speedX = 3;
+    this.speedX = 5;
     this.speedY = 5;  
     this.x = x;
     this.y = y;
     this.image = new Image();
     this.image.src = srcImage;
+    this.collisionleft = collisionleft;
+    this.collisionRight = collisionRight;
+    this.collisionTop = collisionTop;
+    this.collisionBot = collisionBot;
 
     this.update = function(){
         ctx = GameScreen.context;
@@ -163,7 +242,10 @@ function ObstacleComponent(width, height, srcImage, x, y){
         this.checkHitBoundaries();
     }
     this.checkHitBoundaries = function(){
-        if(this.x <= (0 - this.width)){
+        if(this.x <= (0 - this.width) && Obstacles.length === maxObstacleNumber){
+            if(!Character.immunity){
+                GameScreen.setGameScore();
+            }
             this.destroyer();
         }
         else if((GameScreen.canvas.width / 4) >= this.x){
@@ -174,22 +256,42 @@ function ObstacleComponent(width, height, srcImage, x, y){
     }
     this.destroyer = function(){
         Obstacles.shift();
+        Character.setImmunity(false);
+    }
+}
+
+function checkGameStop(){
+    if(Character.life === 1){
+        GameScreen.stop();
+        GameScreen.renderHeart(0);
+    }else{
+        Character.life = Character.life - 1;
+        GameScreen.renderHeart(Character.life);
+        Character.setImmunity(true);
     }
 }
 
 function running(){
-    Character.updateSpriteRunning();
-    Character.update();
+    if(Character.crashWith(Obstacles[0])){
+        checkGameStop();
+    }else{
+        Character.updateSpriteRunning();
+        Character.update();
+    }
 }
 function updateGameScreen(){
-    GameScreen.clear();
-    Character.newPos();
-    Character.update();
-
-    if(Obstacles.length > 0){
-        for(var i=0; i<Obstacles.length; i++){
-            Obstacles[i].newPos();
-            Obstacles[i].update();
+    if(Character.crashWith(Obstacles[0])){
+        checkGameStop();
+    }else{
+        GameScreen.clear();
+        Character.newPos();
+        Character.update();
+    
+        if(Obstacles.length > 0){
+            for(var i=0; i<Obstacles.length; i++){
+                Obstacles[i].newPos();
+                Obstacles[i].update();
+            }
         }
     }
 }
@@ -201,7 +303,7 @@ function accelerate(n) {
         Character.gravity = n;
         Character.image.src = "./assets/img/dino-jump/jump_2.png";
     }else if(Character.y == jumpHeight){
-        accelerateDown(0.2)
+        accelerateDown(10)
     }
 }
 
@@ -218,13 +320,17 @@ function createObstacle(){
         obstacleObj.width, 
         obstacleObj.height, 
         obstacleObj.src, 
-        Math.floor((Math.random() * (obstacleObj.x * 1.5)) + obstacleObj.x), 
-        obstacleObj.y
+        Math.floor((Math.random() * (obstacleObj.x * 1)) + obstacleObj.x), 
+        obstacleObj.y,
+        obstacleObj.collisionleft,
+        obstacleObj.collisionRight,
+        obstacleObj.collisionTop,
+        obstacleObj.collisionBot
     );
     Obstacles.push(obs); 
 }
 
-function startGame(){
+function loadGame(){
     if(!Character){
         Character = new component(170, 118, "", 10, 180);
     }
@@ -240,10 +346,18 @@ function startGame(){
                 obstacleObj.height, 
                 obstacleObj.src, 
                 obstacleObj.x + (number * 600), 
-                obstacleObj.y
+                obstacleObj.y,
+                obstacleObj.collisionleft,
+                obstacleObj.collisionRight,
+                obstacleObj.collisionTop,
+                obstacleObj.collisionBot
             );
             Obstacles.push(obs); 
         }
     }
+   GameScreen.load();
+}
+
+function runGame(){
     GameScreen.start();
 }
